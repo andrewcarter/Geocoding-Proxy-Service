@@ -1,0 +1,4 @@
+connexion==2.3.0
+coverage==4.5.3
+Flask==1.0.3
+swagger-ui-bundle==0.0.5

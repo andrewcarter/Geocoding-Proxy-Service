@@ -1,0 +1,63 @@
+openapi: 3.0.0
+info:
+  title: Gecoding Proxy Service
+  description: Geocoding proxy which supports multiple services with redundancy in case of individual service failure.
+  version: "0.1"
+
+servers:
+- url: http://0.0.0.0:5000/v1/
+  description: Local test server
+
+# For more info on the OpenAPI spec see: https://swagger.io/docs/specification/about/
+paths:
+  /geocode:
+    get:
+      operationId: geocode_controller.get
+      tags:
+        - Geocode
+      summary: Execute Geocode request
+      description: Execute Geocode request, fallback to backup service on error or no results.
+      parameters:
+        - in: query
+          name: address
+          required: true
+          schema:
+            type: string
+          description: The address to use for the geocoding request.
+        - in: query
+          name: force_service
+          schema:
+            type: string
+            enum:
+              - here
+              - google
+          description: Force the use of a specific service (no fallback will be performed). The options are 'here' or 'google'.
+      responses:
+        200:
+          description: The request was successful. The results array could be empty if no supported service returned a result. If so, try making the address more specific.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        latitude:
+                          type: string
+                          description: WGS84 Latitude
+                        longitude:
+                          type: string
+                          description: WGS84 Longitude
+                        formatted_address:
+                          type: string
+                          description: Formatted Address returned from the geocoding service
+                        service_provider:
+                          type: string
+                          description: Geocoding service used to complete the request
+        400:
+          description: Bad Request. Missing required parameters or they are malformed.
+        500:
+          description: An Internal service error outside of your control occured. Please try again later and contact the service provider if this persists.
